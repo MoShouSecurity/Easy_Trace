@@ -343,3 +343,7 @@ go build -o Easy_Trace.exe ./cmd/easytrace-agent
 5. 不引入自动处置、自动网络查询或外部命令执行。
 6. 不将检测逻辑放入采集器。
 7. 真实主机行为与 fixture 验证必须明确区分。
+
+## License
+
+[MIT](LICENSE) © 2026 MoShouSecurity
