@@ -6,10 +6,22 @@ Easy Trace 是使用 Go 开发的 Windows 主机离线调查命令行工具。�
 
 工具不联网、不执行外部命令、不做自动处置，也不把规则命中表述为对主机、进程、文件或网络端点的确定性结论。
 
-[快速开始](#快速开始) · [核心命令](#核心命令) · [采集模块](#采集模块) · [数据与能力边界](#数据与能力边界)
+[下载发布版](https://github.com/MoShouSecurity/Easy_Trace/releases) · [快速开始](#快速开始) · [核心命令](#核心命令) · [采集模块](#采集模块) · [数据与能力边界](#数据与能力边界)
 
 > 本仓库只包含构建所需的源码，不含本地开发文档与测试文件。
 > 当前产品形态是 CLI，不包含 GUI、常驻服务、在线 IOC 查询或自动提权。
+
+## 下载
+
+从 [GitHub Releases](https://github.com/MoShouSecurity/Easy_Trace/releases) 下载 `Easy_Trace.exe`。发布版已嵌入 YAML 规则、图标与版本资源，单个文件即可运行，不需要额外分发 `rules/` 目录。
+
+下载后可对照发布说明中的 SHA256：
+
+```powershell
+Get-FileHash .\Easy_Trace.exe -Algorithm SHA256
+```
+
+也可以从源码构建，见[快速开始](#快速开始)。
 
 ## 能做什么
 
@@ -27,7 +39,7 @@ Easy Trace 是使用 Go 开发的 Windows 主机离线调查命令行工具。�
 
 ## 快速开始
 
-要求：Windows + Go 1.26.5 或更高版本。
+如果已经下载发布版，可直接从下面的运行命令开始；从源码构建要求 Windows + Go 1.26.5 或更高版本。
 
 ```powershell
 # 一条命令完成格式化、构建、自校验、vet 与测试
