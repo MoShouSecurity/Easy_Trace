@@ -1,0 +1,13 @@
+# Easy_Trace Analyzer 规则：Security 通道记录服务安装（4697）
+# 需要启用相应审计策略；与 7045 可能对同一次安装各产生一条线索，报告中按规则聚合。
+- rule_id: event.service_install_security
+  title: Security 通道记录服务安装
+  description: 安全日志记录了一次服务安装；需要结合服务名、操作账号和后续服务行为核查。
+  severity: medium
+  target:
+    entity_type: event
+  conditions:
+    - field: event_id
+      operator: equals
+      value: "4697"
+  advice: 核对 service_name 与安装来源；与 7045/服务实体交叉验证，确认是否为预期部署。

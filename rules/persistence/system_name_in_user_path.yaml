@@ -1,0 +1,53 @@
+# Easy_Trace Analyzer 规则：启动项伪装成系统组件名且落在用户可写目录
+#
+# 为什么是 high：系统组件（svchost/winlogon/lsass/...）只应来自
+#   %SystemRoot%\System32（或 SysWOW64）；同名文件出现在用户可写目录的自启动项里，
+#   是远控常用的"名字伪装"手法，且正规软件几乎不会这样部署。
+# 说明：这里匹配的是**目标文件路径**（path；缺失时由分析器用解析出的 command_exe
+#   补位）中的组件名，不是启动项的参数，也不是注册表值名。参数里的同名 DLL
+#   （例如 System32 下的 rundll32 加载 C:\Users\Public\x.dll）不构成伪装。
+#   值名伪装是另一种形态，需要时另立规则。
+- rule_id: persistence.system_name_in_user_path
+  title: 启动项伪装成系统组件名且位于用户可写目录
+  description: 注册表启动项的目标文件使用了系统组件名，但位于用户可写目录。
+  severity: high
+  target:
+    entity_type: persistence
+  conditions:
+    - field: type
+      operator: contains_any
+      values:
+        - registry_run
+        - active_setup
+        - winlogon
+        - boot_execute
+    - field: path
+      operator: contains_any
+      values:
+        - "\\Users\\"
+        - "\\AppData\\"
+        - "\\Temp\\"
+        - "\\Public\\"
+        - "\\ProgramData\\"
+        - "\\PerfLogs\\"
+        - "\\msys64\\"
+        - "\\Drivers\\"
+        - "\\Downloads\\"
+        - "\\Desktop\\"
+    - field: path
+      operator: contains_any
+      values:
+        - "\\svchost.exe"
+        - "\\winlogon.exe"
+        - "\\lsass.exe"
+        - "\\services.exe"
+        - "\\csrss.exe"
+        - "\\smss.exe"
+        - "\\explorer.exe"
+        - "\\taskhostw.exe"
+        - "\\rundll32.exe"
+        - "\\regsvr32.exe"
+        - "\\dllhost.exe"
+        - "\\spoolsv.exe"
+        - "\\wuauclt.exe"
+  advice: 核对目标文件签名/哈希与落地时间；系统组件名不应出现在用户可写目录的自启动项里。

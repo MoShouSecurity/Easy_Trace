@@ -1,0 +1,41 @@
+# Easy_Trace Analyzer 规则：用户级启动项（HKCU Run/RunOnce）指向用户可写目录
+#
+# 为什么是 medium（内部依据，不写进 findings/报告）：
+#   来自一线处置经验——银狐类远控的持久化形态之一就是"HKCU Run/RunOnce 指向用户可写
+#   目录（%APPDATA% / %LOCALAPPDATA% / Temp / Public / Downloads / Desktop）"。因此这条
+#   必须有权重，不能降成"常态清单"。
+#   之所以不设 high：正规 per-user 自启动（IM / 同步盘 / 各类国产更新器）同样落在此范围，
+#   high 留给"位置异常 / 目标无签名 / 系统组件名伪装"这类证据组合（见同目录
+#   system_user_path.yaml，以及后续的 persistence 目标文件元数据能力）。
+#   对外文本（title/description/advice）保持中性：不定性、不点家族名。
+- rule_id: persistence.user_path
+  title: 用户级启动项指向用户可写目录
+  description: 注册表 HKCU Run/RunOnce 指向用户可写目录。
+  severity: medium
+  target:
+    entity_type: persistence
+  conditions:
+    - field: type
+      operator: contains_any
+      values:
+        - registry_run
+        - active_setup
+        - winlogon
+        - boot_execute
+    # location 是采集器给出的 hive 显示名（HKCU / HKLM）；同时接受全名写法，
+    # 便于手工导入的快照匹配。
+    - field: location
+      operator: contains_any
+      values:
+        - HKCU
+        - HKEY_CURRENT_USER
+    - field: path
+      operator: contains_any
+      values:
+        - "\\Users\\"
+        - "\\AppData\\"
+        - "\\Temp\\"
+        - "\\Public\\"
+        - "\\Downloads\\"
+        - "\\Desktop\\"
+  advice: 核对启动项来源、命令参数与文件签名/哈希，确认是否属已知软件。

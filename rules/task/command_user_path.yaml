@@ -1,0 +1,21 @@
+# Easy_Trace Analyzer 规则：计划任务从用户可写目录执行
+# 数据源：task.command。只覆盖任务 XML 的第一个 <Exec>；多 Action 任务可能漏掉后续动作。
+- rule_id: task.command_user_path
+  title: 计划任务从用户可写目录执行
+  description: 计划任务的命令指向用户可写目录或公共可写位置；可能由正常用户脚本产生，需核对任务来源与运行账号。
+  severity: medium
+  target:
+    entity_type: task
+  conditions:
+    - field: command
+      operator: contains_any
+      values:
+        - "\\Users\\"
+        - "\\AppData\\"
+        - "\\Temp\\"
+        - "\\Public\\"
+        - "\\ProgramData\\"
+        - "\\PerfLogs\\"
+        - "\\Downloads\\"
+        - "\\Desktop\\"
+  advice: 核对任务名称、作者、运行账号与命令来源；检查该目录下的文件签名、哈希和落地时间。

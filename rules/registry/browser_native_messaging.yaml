@@ -1,0 +1,24 @@
+# Easy_Trace Analyzer 规则：浏览器 Native Messaging 主机注册（清单性质，low）
+#
+# 数据源：`collect --module registry --key <下列键>`：
+#     HKLM\Software\Google\Chrome\NativeMessagingHosts\* / HKCU\...
+#     HKLM\Software\Microsoft\Edge\NativeMessagingHosts\* / HKCU\...
+#   子键 = 主机名，默认值 = 清单文件（JSON）路径。
+#
+# low：正规软件（密码管理器、输入法、下载器）也用 Native Messaging；本规则只形成清单。
+# 指向用户可写目录的清单由 registry.browser_native_messaging_user_path（high）单列。
+- rule_id: registry.browser_native_messaging
+  title: 存在浏览器 Native Messaging 主机注册
+  description: 注册表中存在 Chrome/Edge 的 Native Messaging 主机注册，值为清单文件路径。
+  severity: low
+  target:
+    entity_type: registry
+  conditions:
+    - field: key
+      operator: contains_any
+      values:
+        - "NativeMessagingHosts"
+    - field: value_type
+      operator: equals
+      value: REG_SZ
+  advice: 核对主机名与清单路径是否属于已知软件；非预期主机名配合用户目录路径优先核查。

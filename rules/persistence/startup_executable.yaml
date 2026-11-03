@@ -1,0 +1,44 @@
+# WinTrace Analyzer 规则：用户启动文件夹中存在可执行文件
+# 通用 DFIR 规则，不绑定具体样本。
+# Step 11.6：启动文件夹按证据分级——只对可执行/脚本文件（.exe/.bat/.cmd/.ps1/.vbs
+# 等）命中；普通配置文件（.ini/.txt/.xml/.log）与 desktop.ini（Windows Shell 配置，
+# 非启动机制）不生成 Finding，降低低价值噪音。severity=medium 匹配证据强度
+# （"值得调查"而非"已确认恶意"）。
+# 注：.lnk 快捷方式是启动文件夹的常见合法组成（软件安装默认项），不直接执行，
+# 不纳入本规则。
+# 用户级（%APPDATA%\...\Startup）与全用户级（%ProgramData%\...\Startup）都要覆盖：
+# 采集器两者都枚举，但旧规则只匹配 \Users\ 等用户目录，全用户启动目录会静默漏报。
+
+- rule_id: persistence.startup_executable
+  title: 启动文件夹中存在可执行文件
+  description: 用户启动文件夹中存在可执行文件，值得调查。
+  severity: medium
+  target:
+    entity_type: persistence
+  conditions:
+    - field: type
+      operator: equals
+      value: startup_folder
+    - field: path
+      operator: contains_any
+      values:
+        - "\\Users\\"
+        - "\\AppData\\"
+        - "\\Temp\\"
+        - "\\Public\\"
+        - "\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\"
+    - field: path
+      operator: ends_with_any
+      values:
+        - ".exe"
+        - ".bat"
+        - ".cmd"
+        - ".ps1"
+        - ".vbs"
+        - ".js"
+        - ".jse"
+        - ".wsf"
+    - field: name
+      operator: not_equals
+      value: desktop.ini
+  advice: 核查启动项来源、文件签名与哈希，确认是否预期配置。

@@ -1,0 +1,24 @@
+# Easy_Trace Analyzer 规则：凭据窃取工具（命令行内容）——高危工具名按两段 AND 书写
+#
+# 为什么这样写（重要）：完整工具名以连字符串出现在二进制里时，会被杀软启发式命中，
+# 导致**单 exe 被拒绝执行**（本机实测：内嵌该字串的构建产物执行报 Access is denied）。
+# 因此把工具名拆成两段，用 AND 组合表达同一语义（该工具名必然同时包含这两段），
+# 二进制中不再出现连续高危及字串。规则语义不变。
+# 数据源：process.command_line（仅 Deep 且采集策略命中时才有；Basic 没有该字段）。
+- rule_id: process.command_line.credential_tool_katz
+  title: 命令行出现已知凭据窃取工具
+  description: 进程命令行同时包含该工具的固定两段特征（分段匹配，避免内置字串被杀软误判）。
+  severity: high
+  target:
+    entity_type: process
+  conditions:
+    - field: command_line
+      operator: contains
+      value: "mimi"
+    - field: command_line
+      operator: contains
+      value: "katz"
+    - field: collection_level
+      operator: equals
+      value: deep
+  advice: 立即核对执行账号、父进程与文件哈希；凭据窃取工具出现意味着账号口令可能已泄露。

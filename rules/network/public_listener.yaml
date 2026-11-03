@@ -1,0 +1,20 @@
+# WinTrace Analyzer 规则：非回环地址监听（暴露面提示）
+# 通用 DFIR 规则，不绑定具体样本。
+
+- rule_id: network.public_listener
+  title: 非回环地址监听端口
+  description: 主机存在监听非回环地址的端口，暴露面值得关注。
+  severity: low
+  target:
+    entity_type: network
+  conditions:
+    - field: local_ip
+      operator: not_equals
+      value: "127.0.0.1"
+    - field: local_ip
+      operator: not_equals
+      value: "::1"
+    - field: state
+      operator: equals
+      value: LISTENING
+  advice: 确认监听进程与端口的业务用途，核查暴露面是否预期。

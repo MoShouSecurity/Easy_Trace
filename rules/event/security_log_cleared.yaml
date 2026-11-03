@@ -1,0 +1,13 @@
+# Easy_Trace Analyzer 规则：安全日志被清空（1102）
+# 数据源：Security 通道事件实体。只描述“日志被清空”这一事实，不判断操作者动机。
+- rule_id: event.security_log_cleared
+  title: 安全日志被清空
+  description: 安全日志记录显示审计日志被清空；该行为常见于清理痕迹，也可能由合规运维触发，需核对操作账号与时间。
+  severity: high
+  target:
+    entity_type: event
+  conditions:
+    - field: event_id
+      operator: equals
+      value: "1102"
+  advice: 核对 subject_user、操作时间与变更工单；检查同一时间段是否有其它日志清理、服务安装或账号变更。

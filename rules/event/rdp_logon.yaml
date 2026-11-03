@@ -1,0 +1,15 @@
+# Easy_Trace Analyzer 规则：远程桌面登录成功（4624 + LogonType 10）
+- rule_id: event.rdp_logon
+  title: 远程桌面登录成功
+  description: 安全日志记录了一次 LogonType=10 的远程桌面登录；远程运维和攻击者都可能使用，需结合来源 IP、账号和后续行为判断。
+  severity: medium
+  target:
+    entity_type: event
+  conditions:
+    - field: event_id
+      operator: equals
+      value: "4624"
+    - field: logon_type
+      operator: equals
+      value: "10"
+  advice: 核对 ip_address、target_user、登录时段与业务工单；检查同一来源的失败登录、账号创建或权限变更。

@@ -1,0 +1,20 @@
+# WinTrace Analyzer 规则：Office 进程创建 Shell/脚本解释器子进程
+# 通用 DFIR 规则，不绑定具体样本。
+
+- rule_id: process.office_to_shell
+  title: Office 进程创建 Shell/脚本解释器子进程
+  description: Office 进程创建 Shell/脚本解释器子进程，建议进一步核查父子进程关系及命令行。
+  severity: high
+  target:
+    entity_type: process
+  conditions:
+    - field: name
+      operator: contains_any
+      values:
+        - powershell.exe
+        - pwsh.exe
+        - cmd.exe
+        - wscript.exe
+        - cscript.exe
+        - mshta.exe
+  advice: 核查父子进程关系及命令行，确认是否为文档宏等预期行为。

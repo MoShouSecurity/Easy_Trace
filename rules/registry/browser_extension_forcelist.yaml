@@ -1,0 +1,26 @@
+# Easy_Trace Analyzer 规则：浏览器强制安装扩展策略（ExtensionInstallForcelist）
+#
+# 数据源：`collect --module registry --key <下列键>`（一条 registry 实体 = 一个值）。
+#   键位（来自一线排查工具的事实性清单）：
+#     HKLM\Software\Policies\Google\Chrome\ExtensionInstallForcelist
+#     HKLM\Software\Policies\Microsoft\Edge\ExtensionInstallForcelist
+#     HKLM\Software\WOW6432Node\Policies\...（同上两个的 32 位视图）
+#   值名 = 扩展 ID，值数据 = "<id>;<update_url>"。
+#
+# 为什么是 medium：企业下发的强制策略是正常运维形态；但第三方 update_url 或来源不明的
+#   扩展值得核对。这里不做 URL 白名单判断（规则引擎无"排除"算子，且白名单随环境变化）。
+- rule_id: registry.browser_extension_forcelist
+  title: 存在浏览器强制安装扩展策略
+  description: 注册表中存在 Chrome/Edge 的 ExtensionInstallForcelist 策略值，该策略会强制安装扩展。
+  severity: medium
+  target:
+    entity_type: registry
+  conditions:
+    - field: key
+      operator: contains_any
+      values:
+        - "ExtensionInstallForcelist"
+    - field: value_type
+      operator: equals
+      value: REG_SZ
+  advice: 核对是否为组织下发策略；重点检查值数据中的 update_url 是否为官方商店地址，第三方地址需溯源。

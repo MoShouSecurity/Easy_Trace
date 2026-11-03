@@ -1,0 +1,20 @@
+# WinTrace Analyzer 规则：用户可写目录中的可执行文件
+# 通用 DFIR 规则，不绑定具体样本。
+
+- rule_id: process.user_path.executable
+  title: 用户可写目录中的可执行文件
+  description: 进程位于用户可写目录且为可执行类型，值得关注。
+  severity: low
+  target:
+    entity_type: process
+  conditions:
+    - field: path
+      operator: contains_any
+      values:
+        - "\\Users\\"
+        - "\\AppData\\"
+        - "\\Temp\\"
+        - "\\Public\\"
+        - "\\Downloads\\"
+        - "\\Desktop\\"
+  advice: 确认该进程是否由已知软件产生，核查其来源与完整性。

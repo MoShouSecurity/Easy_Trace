@@ -1,0 +1,44 @@
+# Easy_Trace Analyzer 规则：启动项目标文件无 PE 安全目录（深采）且位于用户可写目录
+#
+# 依赖深采：signature_state / hash_sha256 / last_write_time 来自 persistence 深采
+#   （collect --module persistence --mode deep → internal/filemeta 只读元数据，
+#   经 entity_update 合并进实体视图）。basic 快照没有这些字段，因此必须显式要求
+#   collection_level equals deep（否则会静默零命中，被误读成"没有无签名启动项"）。
+#
+# 语义（与 process.user_path.unsigned 同口径）：signature_state=missing 只表示
+#   **PE 安全目录不存在**，不等于"确认未签名"——catalog 签名、自解压载体等都可能没有
+#   内嵌安全目录。规则与报告都不得把它叙述成"未签名"结论。
+- rule_id: persistence.user_path_unsigned
+  title: 启动项目标文件无 PE 安全目录且位于用户可写目录
+  description: 自启动项的目标文件位于用户可写目录，且 PE 安全目录不存在；不等价于完整验签结论，需结合来源与哈希核查。本规则依赖深采字段（要求 collection_level=deep）。
+  severity: high
+  target:
+    entity_type: persistence
+  conditions:
+    - field: type
+      operator: contains_any
+      values:
+        - registry_run
+        - active_setup
+        - winlogon
+        - boot_execute
+    - field: path
+      operator: contains_any
+      values:
+        - "\\Users\\"
+        - "\\AppData\\"
+        - "\\Temp\\"
+        - "\\Public\\"
+        - "\\ProgramData\\"
+        - "\\PerfLogs\\"
+        - "\\msys64\\"
+        - "\\Drivers\\"
+        - "\\Downloads\\"
+        - "\\Desktop\\"
+    - field: signature_state
+      operator: equals
+      value: missing
+    - field: collection_level
+      operator: equals
+      value: deep
+  advice: 核对目标文件签名与哈希、落地时间与来源；PE 安全目录缺失不能排除其它签名机制。

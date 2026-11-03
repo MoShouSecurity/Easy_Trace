@@ -1,0 +1,19 @@
+# Easy_Trace Analyzer 规则：服务二进制位于非标准可写位置
+# 与 service.user_path 互补：这里覆盖 ProgramData/PerfLogs/Windows Help/Debug/msys64。
+# 刻意不含 \Drivers\：内核驱动服务常把 ImagePath 指向 System32\drivers，不能当异常。
+- rule_id: service.suspicious_location
+  title: 服务二进制位于非标准可写位置
+  description: 服务二进制位于程序数据、性能日志、Windows 帮助/调试或 msys64 等通常不承载服务的位置；需核对服务来源与二进制完整性。
+  severity: high
+  target:
+    entity_type: service
+  conditions:
+    - field: binary_path
+      operator: contains_any
+      values:
+        - "\\ProgramData\\"
+        - "\\PerfLogs\\"
+        - "\\Windows\\Help\\"
+        - "\\Windows\\Debug\\"
+        - "\\msys64\\"
+  advice: 核对服务注册来源、启动账号与二进制签名/哈希，确认是否为预期部署。

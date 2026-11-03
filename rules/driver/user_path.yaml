@@ -1,0 +1,22 @@
+# Easy_Trace Analyzer 规则：内核驱动模块位于用户可写目录
+# 数据源：driver.path（已加载模块路径；部分系统可能留空）。
+- rule_id: driver.user_path
+  title: 内核驱动模块位于用户可写目录
+  description: 已加载的内核驱动模块路径位于用户可写目录或公共可写位置；正常驱动通常从 System32\drivers 或 DriverStore 加载，需核对驱动来源与签名。
+  severity: high
+  target:
+    entity_type: driver
+  conditions:
+    - field: path
+      operator: contains_any
+      values:
+        - "\\Users\\"
+        - "\\AppData\\"
+        - "\\Temp\\"
+        - "\\Public\\"
+        - "\\ProgramData\\"
+        - "\\PerfLogs\\"
+        - "\\msys64\\"
+        - "\\Downloads\\"
+        - "\\Desktop\\"
+  advice: 核对驱动名称、路径、签名/发布者与加载来源；结合服务/驱动安装事件确认是否为预期组件。

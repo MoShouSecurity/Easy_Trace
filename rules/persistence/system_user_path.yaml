@@ -1,0 +1,34 @@
+# Easy_Trace Analyzer 规则：系统级启动项（HKLM Run/RunOnce）指向用户可写目录
+#
+# 为什么是 high：HKLM 的 Run/RunOnce 对**所有用户**生效，正常部署指向
+# %ProgramFiles% 等受控目录；指向 \Users\ / \AppData\ / \Temp\ / \Public\ /
+# \Downloads\ / \Desktop\ 属明显异常形态（提权/持久化常见手法），且基数小、误报少。
+- rule_id: persistence.system_user_path
+  title: 系统级启动项指向用户可写目录
+  description: 注册表 HKLM Run/RunOnce 指向用户可写目录；系统级启动项落在用户可写位置属异常形态，值得优先核查。
+  severity: high
+  target:
+    entity_type: persistence
+  conditions:
+    - field: type
+      operator: contains_any
+      values:
+        - registry_run
+        - active_setup
+        - winlogon
+        - boot_execute
+    - field: location
+      operator: contains_any
+      values:
+        - HKLM
+        - HKEY_LOCAL_MACHINE
+    - field: path
+      operator: contains_any
+      values:
+        - "\\Users\\"
+        - "\\AppData\\"
+        - "\\Temp\\"
+        - "\\Public\\"
+        - "\\Downloads\\"
+        - "\\Desktop\\"
+  advice: 核对启动项来源、命令参数、文件签名与哈希，并确认是否有对应的安装或运维记录。

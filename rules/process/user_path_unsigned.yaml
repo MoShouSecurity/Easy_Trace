@@ -1,0 +1,28 @@
+# WinTrace Analyzer 规则：用户路径中的 PE 签名目录缺失
+# 仅描述 PE 头事实；目录缺失不排除 catalog 签名，也不是完整信任验证结论。
+
+- rule_id: process.user_path.unsigned
+  title: 用户路径中的进程 PE 签名目录缺失
+  description: 进程位于用户可写路径且 PE 签名目录缺失；这不等价于完整验签判定，需结合来源和其他证据核查。本规则依赖深采字段（要求 collection_level=deep）。
+  severity: medium
+  target:
+    entity_type: process
+  conditions:
+    - field: path
+      operator: contains_any
+      values:
+        - "\\Users\\"
+        - "\\AppData\\"
+        - "\\Temp\\"
+        - "\\Public\\"
+        - "\\Downloads\\"
+        - "\\Desktop\\"
+    - field: signature_state
+      operator: equals
+      value: missing
+    # signature_state 只在深采（ReadFile 能力）阶段产生：显式要求深采，
+    # 否则 basic 快照会静默零命中，被误读成"没有无签名进程"。
+    - field: collection_level
+      operator: equals
+      value: deep
+  advice: 检查进程来源、父进程、命令行及文件哈希；PE 目录缺失不能排除其他签名机制。

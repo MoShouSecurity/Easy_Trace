@@ -1,0 +1,27 @@
+# Easy_Trace Analyzer 规则：服务安装事件指向用户可写路径
+# 7045（System）的 ImagePath 与 4697（Security）的 ServiceFileName 统一解析为 image_path。
+# 事件 ID 用 contains_any 表达 7045/4697 两个值（DSL 没有 OR）。
+- rule_id: event.service_install_user_path
+  title: 服务安装事件指向用户可写路径
+  description: 服务安装事件记录的服务文件位于用户可写或公共可写位置；正常安装器也可能使用 ProgramData，需结合服务名、来源账号与后续行为核查。
+  severity: high
+  target:
+    entity_type: event
+  conditions:
+    - field: event_id
+      operator: contains_any
+      values:
+        - "7045"
+        - "4697"
+    - field: image_path
+      operator: contains_any
+      values:
+        - "\\Users\\"
+        - "\\AppData\\"
+        - "\\Temp\\"
+        - "\\Public\\"
+        - "\\ProgramData\\"
+        - "\\PerfLogs\\"
+        - "\\Downloads\\"
+        - "\\Desktop\\"
+  advice: 核对 service_name、image_path、安装时间与操作账号；结合服务实体、文件签名/哈希和同时间段的进程创建。

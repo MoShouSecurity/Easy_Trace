@@ -1,0 +1,18 @@
+# Easy_Trace Analyzer 规则：访问管理共享 ADMIN$/C$（5140/5145）
+# 仅覆盖白名单内的共享访问事件；IPC$ 噪声较高，一期不纳入。
+- rule_id: event.admin_share_access
+  title: 访问管理共享 ADMIN$ 或 C$
+  description: 安全日志记录了对管理共享（ADMIN$/C$）的访问；运维、备份和横向移动都可能产生该行为，需核对来源 IP、账号和后续操作。
+  severity: medium
+  target:
+    entity_type: event
+  conditions:
+    - field: channel
+      operator: equals
+      value: Security
+    - field: share_name
+      operator: contains_any
+      values:
+        - "ADMIN$"
+        - "C$"
+  advice: 核对 ip_address、target_user 与共享路径；检查同一来源是否伴随服务安装、远程执行或凭据使用。

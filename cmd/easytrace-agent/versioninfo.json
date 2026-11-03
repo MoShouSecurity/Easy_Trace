@@ -1,0 +1,26 @@
+{
+  "FixedFileInfo": {
+    "FileVersion":    { "Major": 0, "Minor": 1, "Patch": 0, "Build": 0 },
+    "ProductVersion": { "Major": 0, "Minor": 1, "Patch": 0, "Build": 0 },
+    "FileFlagsMask": "3f",
+    "FileFlags": "00",
+    "FileOS": "040004",
+    "FileType": "01",
+    "FileSubType": "00"
+  },
+  "StringFileInfo": {
+    "CompanyName":      "Easy_Trace",
+    "FileDescription":  "Easy_Trace 主机调查与应急响应命令行工具",
+    "FileVersion":      "0.1.0.0",
+    "InternalName":     "Easy_Trace.exe",
+    "LegalCopyright":   "Easy_Trace Project - 内部授权使用",
+    "OriginalFilename": "Easy_Trace.exe",
+    "ProductName":      "Easy_Trace",
+    "ProductVersion":   "0.1.0"
+  },
+  "VarFileInfo": {
+    "Translation": { "LangID": "0409", "CharsetID": "04B0" }
+  },
+  "IconPath": "easy_trace.ico",
+  "ManifestPath": "easy_trace.manifest"
+}

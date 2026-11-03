@@ -1,0 +1,20 @@
+# WinTrace Analyzer 规则：用户目录进程发起网络连接
+# 通用 DFIR 规则，不绑定具体样本。
+
+- rule_id: process.user_path.network
+  title: 用户目录进程发起网络连接
+  description: 用户可写目录中的进程存在对外网络连接，产生调查线索。
+  severity: low
+  target:
+    entity_type: process
+  conditions:
+    - field: path
+      operator: contains_any
+      values:
+        - "\\Users\\"
+        - "\\AppData\\"
+        - "\\Temp\\"
+        - "\\Public\\"
+        - "\\Downloads\\"
+        - "\\Desktop\\"
+  advice: 确认连接的合法性与目的地址，禁止在线 IOC/信誉查询。

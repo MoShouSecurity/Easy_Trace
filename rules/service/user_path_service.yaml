@@ -1,0 +1,20 @@
+# WinTrace Analyzer 规则：服务二进制位于用户可写目录
+# 通用 DFIR 规则，不绑定具体样本。
+
+- rule_id: service.user_path
+  title: 服务二进制位于用户可写目录
+  description: 服务二进制位于用户可写目录，建议核查服务来源与二进制完整性。
+  severity: high
+  target:
+    entity_type: service
+  conditions:
+    - field: binary_path
+      operator: contains_any
+      values:
+        - "\\Users\\"
+        - "\\AppData\\"
+        - "\\Temp\\"
+        - "\\Public\\"
+        - "\\Downloads\\"
+        - "\\Desktop\\"
+  advice: 核查服务注册来源、二进制签名与完整性，确认是否为预期部署。

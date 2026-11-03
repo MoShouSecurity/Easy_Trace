@@ -1,0 +1,32 @@
+# 构建产物
+easytrace-agent.exe
+Easy_Trace.exe
+*.exe
+# verify 生成的自校验清单（构建产物，随 exe 分发但不必入库）
+Easy_Trace.manifest.sha256
+
+# 操作留痕（可能含主机名/用户名，绝不提交）
+easytrace-audit.log
+
+# 输出与临时文件
+result.jsonl
+*.jsonl
+*.db
+err.txt
+data/
+
+# IDE
+.idea/
+.vscode/
+
+# 会话工件（不提交）
+.claude/
+
+# 事件日志导出物（证据，绝不提交）
+*.evtx
+
+# 演示/临时输出（本地查看用，不提交）
+/demo-timeline/
+
+# 参考模板（第三方安全报告导出物，仅本地查阅，不提交）
+/html模板/

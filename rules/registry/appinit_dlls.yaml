@@ -1,0 +1,29 @@
+# Easy_Trace Analyzer 规则：AppInit_DLLs 指向用户可写路径
+# 数据源：显式 collect --module registry --key "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Windows"
+# AppInit_DLLs 会把 DLL 加载进许多用户态进程；只对用户可写/公共可写路径告警，避免正常软件误报。
+- rule_id: registry.appinit_dlls
+  title: AppInit_DLLs 指向用户可写路径
+  description: AppInit_DLLs 配置的 DLL 位于用户可写或公共可写位置；这是历史悠久的用户态注入/持久化位置，正常软件通常不会这样部署。
+  severity: high
+  target:
+    entity_type: registry
+  conditions:
+    - field: key
+      operator: contains_any
+      values:
+        - "\\Windows\\CurrentVersion\\Windows"
+    - field: name
+      operator: equals
+      value: AppInit_DLLs
+    - field: value_data
+      operator: contains_any
+      values:
+        - "\\Users\\"
+        - "\\AppData\\"
+        - "\\Temp\\"
+        - "\\Public\\"
+        - "\\ProgramData\\"
+        - "\\PerfLogs\\"
+        - "\\Downloads\\"
+        - "\\Desktop\\"
+  advice: 核对 DLL 来源、签名/哈希与注册表写入时间；确认是否为已知软件的遗留配置。

@@ -1,0 +1,25 @@
+# Easy_Trace Analyzer 规则：PowerShell 脚本块中的高信号内容（4104）
+# 需要启用 PowerShell 脚本块日志；脚本内容可能被截断，单条脚本块不等同于恶意。
+- rule_id: event.powershell_suspicious_script
+  title: PowerShell 脚本块包含高信号内容
+  description: PowerShell 脚本块记录包含编码/解码、动态执行或远程下载特征；管理脚本也可能命中，需核对执行账号、父进程和脚本来源。
+  severity: medium
+  target:
+    entity_type: event
+  conditions:
+    - field: event_id
+      operator: equals
+      value: "4104"
+    - field: script_block_text
+      operator: contains_any
+      values:
+        - "-encodedcommand"
+        - "frombase64string"
+        - "invoke-expression"
+        - "iex("
+        - "downloadstring("
+        - "downloadfile("
+        - "net.webclient"
+        - "-exec bypass"
+        - "-w hidden"
+  advice: 核对脚本来源、执行账号与父进程；解码完整脚本块并检查同时间段的网络连接与文件落地。

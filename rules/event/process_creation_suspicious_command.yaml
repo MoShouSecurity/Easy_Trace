@@ -1,0 +1,35 @@
+# Easy_Trace Analyzer 规则：进程创建事件中的高信号命令行（4688）
+# 数据源：Security 4688 的 CommandLine。需要启用进程创建审计；命令行可能被截断。
+- rule_id: event.process_creation_suspicious_command
+  title: 进程创建事件包含高信号命令行特征
+  description: 进程创建事件的命令行包含编码/下载/远程加载/反弹连接或凭据转储入口等短特征；正常运维脚本也可能命中，需结合父进程、账号和网络行为核查。
+  severity: high
+  target:
+    entity_type: event
+  conditions:
+    - field: event_id
+      operator: equals
+      value: "4688"
+    - field: command_line
+      operator: contains_any
+      values:
+        - "-encodedcommand"
+        - "-enc "
+        - "frombase64string"
+        - "invoke-expression"
+        - "iex("
+        - "downloadstring("
+        - "downloadfile("
+        - "net.webclient"
+        - "certutil -urlcache"
+        - "certutil -decode"
+        - "bitsadmin /transfer"
+        - "start-bitstransfer"
+        - "/dev/tcp/"
+        - "nc -e"
+        - "ncat -e"
+        - "socat tcp"
+        - "procdump"
+        - "comsvcs.dll"
+        - "minidump"
+  advice: 核对 process_name、父进程、执行账号与命令行来源；结合同一时段的网络连接、文件落地和服务/任务变更。

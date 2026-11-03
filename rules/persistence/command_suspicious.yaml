@@ -1,0 +1,32 @@
+# Easy_Trace Analyzer 规则：启动项命令包含高信号特征
+# 数据源：persistence.command（Run/RunOnce、Active Setup、Winlogon、BootExecute 等）。
+- rule_id: persistence.command_suspicious
+  title: 启动项命令包含高信号特征
+  description: 自启动项的命令包含编码/下载/远程加载/反弹连接或凭据转储入口等短特征；需核对启动项来源、目标文件和执行账号。
+  severity: high
+  target:
+    entity_type: persistence
+  conditions:
+    - field: command
+      operator: contains_any
+      values:
+        - "-encodedcommand"
+        - "-enc "
+        - "frombase64string"
+        - "invoke-expression"
+        - "iex("
+        - "downloadstring("
+        - "downloadfile("
+        - "net.webclient"
+        - "certutil -urlcache"
+        - "certutil -decode"
+        - "bitsadmin /transfer"
+        - "start-bitstransfer"
+        - "/dev/tcp/"
+        - "nc -e"
+        - "ncat -e"
+        - "socat tcp"
+        - "procdump"
+        - "comsvcs.dll"
+        - "minidump"
+  advice: 核对启动项类型、位置、目标文件签名/哈希与写入时间；确认是否为已知软件的正常封装。

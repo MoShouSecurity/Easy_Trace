@@ -1,0 +1,30 @@
+# Easy_Trace Analyzer 规则：Native Messaging 清单文件位于用户可写目录（high）
+#
+# 数据源同上（registry 实体的 value_data = 清单文件路径）。
+# 为什么是 high：浏览器 Native Messaging 允许扩展直接启动本机程序（等于给浏览器开了
+#   一条本地执行通道）；清单文件落在 \Users\ / \Temp\ / \Public\ 等用户可写位置，
+#   是"落地即持久化"的常见形态，正规软件一般放在 Program Files / ProgramData。
+- rule_id: registry.browser_native_messaging_user_path
+  title: 浏览器 Native Messaging 清单位于用户可写目录
+  description: Chrome/Edge Native Messaging 主机的清单文件路径位于用户可写目录。
+  severity: high
+  target:
+    entity_type: registry
+  conditions:
+    - field: key
+      operator: contains_any
+      values:
+        - "NativeMessagingHosts"
+    - field: value_data
+      operator: contains_any
+      values:
+        - "\\Users\\"
+        - "\\AppData\\"
+        - "\\Temp\\"
+        - "\\Public\\"
+        - "\\Downloads\\"
+        - "\\Desktop\\"
+    - field: value_type
+      operator: equals
+      value: REG_SZ
+  advice: 打开清单文件核对其中可执行程序与允许的扩展，并核对文件签名与落地时间。

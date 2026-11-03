@@ -1,0 +1,33 @@
+# Easy_Trace Analyzer 规则：远程加载型 LOLBin（命令行内容，medium）
+#
+# 数据源：process.command_line（仅 Deep 且采集策略命中时才有；Basic 没有该字段）。
+# 判据设计为**两组 AND**（与凭据规则同一思路，避免单词误报）：
+#   A 组 = 系统自带程序（可被滥用为加载器）
+#   B 组 = 远程/脚本加载特征（URL、javascript:、/i: 等）
+# 所以 `regsvr32 /s C:\a.dll`（正常注册）不报；`regsvr32 /s /u /i:http://… scrobj.dll` 报。
+- rule_id: process.command_line.lolbin_remote_load
+  title: 命令行使用系统程序远程加载内容
+  description: 进程命令行同时使用系统自带程序与远程/脚本加载特征（URL、javascript:、/i: 等）。
+  severity: medium
+  target:
+    entity_type: process
+  conditions:
+    - field: command_line
+      operator: contains_any
+      values:
+        - "regsvr32"
+        - "mshta"
+        - "wmic process call create"
+        - "rundll32 javascript"
+        - "msiexec"
+    - field: command_line
+      operator: contains_any
+      values:
+        - "http://"
+        - "https://"
+        - "javascript:"
+        - "/i:"
+    - field: collection_level
+      operator: equals
+      value: deep
+  advice: 核对加载地址、脚本/程序来源与执行账号；确认为运维脚本还是非预期加载。

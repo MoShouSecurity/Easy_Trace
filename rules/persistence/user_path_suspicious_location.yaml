@@ -1,0 +1,37 @@
+# Easy_Trace Analyzer 规则：启动项指向"不该承载自启动"的位置
+#
+# 判据来源（事实性路径清单，标注出处）：SilverFoxHunter 的 autorunscanner
+#   suspiciousPaths（C:\Windows\Temp\ / C:\ProgramData\ / C:\PerfLogs\ / C:\msys64\ /
+#   C:\Drivers\ / C:\Windows\Debug\ / C:\Windows\Help\ / \AppData\Local\Temp\）。
+#   该仓库无 LICENSE 文件，因此这里只借鉴**事实性路径条目**，未复制其代码。
+# 与 persistence.user_path 的关系：本规则只列"正常软件不会把自启动放这里"的位置；
+#   刻意不含 \Users\ 与 \AppData\Roaming\（过宽，会与 user_path 重叠并把清单淹没）。
+# 允许与其它规则同时命中：本工具以"实体中心评分"叠加证据，重叠不是错误。
+- rule_id: persistence.user_path_suspicious_location
+  title: 启动项指向不该承载自启动的位置
+  description: 注册表启动项的目标文件位于临时目录、公共目录、程序数据目录等通常不承载自启动的位置。
+  severity: high
+  target:
+    entity_type: persistence
+  conditions:
+    - field: type
+      operator: contains_any
+      values:
+        - registry_run
+        - active_setup
+        - winlogon
+        - boot_execute
+    - field: path
+      operator: contains_any
+      values:
+        - "\\Temp\\"
+        - "\\Public\\"
+        - "\\ProgramData\\"
+        - "\\PerfLogs\\"
+        - "\\Windows\\Debug\\"
+        - "\\Windows\\Help\\"
+        - "\\msys64\\"
+        - "\\Drivers\\"
+        - "\\Downloads\\"
+        - "\\Desktop\\"
+  advice: 核对启动项来源与目标文件（签名/哈希/落地时间），确认是否属已知软件；这类位置通常不应承载自启动。

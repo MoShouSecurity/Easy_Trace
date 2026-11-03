@@ -1,0 +1,27 @@
+# Easy_Trace Analyzer 规则：编码/混淆执行（命令行内容）
+#
+# 数据源：process.command_line（仅 Deep 且采集策略命中时才有；Basic 没有该字段）。
+# 深采守卫：规则显式要求 collection_level=deep，Basic 快照不会静默零命中。
+# 判据：PowerShell 编码执行/隐蔽参数与常见内存执行关键字。
+- rule_id: process.command_line.encoded_or_obfuscated
+  title: 命令行出现编码或混淆执行特征
+  description: 进程命令行包含 PowerShell 编码执行、隐蔽参数或内存执行关键字。
+  severity: high
+  target:
+    entity_type: process
+  conditions:
+    - field: command_line
+      operator: contains_any
+      values:
+        - "-encodedcommand"
+        - "-enc "
+        - "frombase64string"
+        - "invoke-expression"
+        - "iex("
+        - "-exec bypass"
+        - "-windowstyle hidden"
+        - "-w hidden"
+    - field: collection_level
+      operator: equals
+      value: deep
+  advice: 解码完整命令行，核对父进程、脚本来源与执行账号；确认是否为已知软件的正常封装。

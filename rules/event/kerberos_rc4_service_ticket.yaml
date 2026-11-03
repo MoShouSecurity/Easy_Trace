@@ -1,0 +1,16 @@
+# Easy_Trace Analyzer 规则：Kerberos 服务票据使用 RC4（4769）
+# RC4 在旧系统/兼容场景仍可能出现；本规则只提供线索，不直接判定 Kerberoasting。
+- rule_id: event.kerberos_rc4_service_ticket
+  title: Kerberos 服务票据使用 RC4
+  description: 安全日志记录了一次使用 RC4（0x17）加密的 Kerberos 服务票据请求；兼容旧系统或特定服务也可能使用，需结合服务名、来源 IP 与频率核查。
+  severity: medium
+  target:
+    entity_type: event
+  conditions:
+    - field: event_id
+      operator: equals
+      value: "4769"
+    - field: ticket_encryption_type
+      operator: equals
+      value: "0x17"
+  advice: 核对 service_name、target_user 与 ip_address；确认目标服务是否仍要求 RC4，并检查是否存在批量票据请求。

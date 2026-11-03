@@ -1,0 +1,32 @@
+# Easy_Trace Analyzer 规则：计划任务命令包含高信号特征
+# 数据源：task.command（当前只解析任务 XML 的第一个 <Exec> 命令）。
+- rule_id: task.command_suspicious
+  title: 计划任务命令包含高信号特征
+  description: 计划任务的命令包含编码/下载/远程加载/反弹连接或凭据转储入口等短特征；正常运维脚本也可能命中，需结合任务来源、运行账号和触发时间核查。
+  severity: high
+  target:
+    entity_type: task
+  conditions:
+    - field: command
+      operator: contains_any
+      values:
+        - "-encodedcommand"
+        - "-enc "
+        - "frombase64string"
+        - "invoke-expression"
+        - "iex("
+        - "downloadstring("
+        - "downloadfile("
+        - "net.webclient"
+        - "certutil -urlcache"
+        - "certutil -decode"
+        - "bitsadmin /transfer"
+        - "start-bitstransfer"
+        - "/dev/tcp/"
+        - "nc -e"
+        - "ncat -e"
+        - "socat tcp"
+        - "procdump"
+        - "comsvcs.dll"
+        - "minidump"
+  advice: 核对任务名称、作者、触发时间与运行账号；结合命令行来源、网络连接和同时间段的进程/服务变更。

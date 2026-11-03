@@ -1,0 +1,23 @@
+# Easy_Trace Analyzer 规则：反弹/远程 Shell（命令行内容）
+#
+# 数据源：process.command_line（仅 Deep 且采集策略命中时才有；Basic 没有该字段）。
+- rule_id: process.command_line.remote_or_reverse_shell
+  title: 命令行出现反弹或远程 Shell 特征
+  description: 进程命令行包含 /dev/tcp、nc/ncat -e、socat 或交互式 shell 管道等反弹连接特征。
+  severity: high
+  target:
+    entity_type: process
+  conditions:
+    - field: command_line
+      operator: contains_any
+      values:
+        - "/dev/tcp/"
+        - "nc -e"
+        - "ncat -e"
+        - "socat tcp"
+        - "bash -i"
+        - "sh -i"
+    - field: collection_level
+      operator: equals
+      value: deep
+  advice: 核对对端地址与端口、执行账号与父进程；结合网络连接事实确认是否为反向控制通道。

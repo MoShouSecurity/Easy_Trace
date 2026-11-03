@@ -1,0 +1,18 @@
+# Easy_Trace Analyzer 规则：IFEO Debugger 被配置
+# 数据源：显式 collect --module registry --key <Image File Execution Options> --depth 1
+# IFEO Debugger 会让指定映像启动时改为运行 Debugger 指向的程序，常被用于后门/持久化。
+- rule_id: registry.ifeo_debugger
+  title: Image File Execution Options 配置了 Debugger
+  description: IFEO 中存在 Debugger 值；它会把指定映像的启动重定向到另一个程序，恶意使用常见于辅助功能后门，正常开发调试也可能使用。
+  severity: high
+  target:
+    entity_type: registry
+  conditions:
+    - field: key
+      operator: contains_any
+      values:
+        - "\\Image File Execution Options\\"
+    - field: name
+      operator: equals
+      value: Debugger
+  advice: 核对 Debugger 指向的程序、配置时间与操作账号；确认是否为预期调试配置，尤其关注 sethc/utilman/osk 等辅助功能映像。

@@ -1,0 +1,17 @@
+# Easy_Trace Analyzer 规则：Kerberos TGT 使用 RC4（4768）
+# 4768 是域控 Security 日志中的 TGT（Authentication Service）请求。
+# RC4 可能在旧域/兼容场景正常出现；本规则只提供迁移/降级线索，不直接判定攻击。
+- rule_id: event.kerberos_rc4_tgt
+  title: Kerberos TGT 使用 RC4
+  description: 域控签发了使用 RC4（0x17）加密的 Kerberos TGT；旧客户端或兼容配置也可能使用，需结合域策略、来源 IP 与频率核查。
+  severity: medium
+  target:
+    entity_type: event
+  conditions:
+    - field: event_id
+      operator: equals
+      value: "4768"
+    - field: ticket_encryption_type
+      operator: equals
+      value: "0x17"
+  advice: 核对 target_user、ip_address 与域内加密策略；确认是否为旧系统兼容需求，并检查是否存在批量/异常票据请求。

@@ -1,0 +1,39 @@
+# Easy_Trace Analyzer 规则：系统组件名进程位于用户可写目录
+# 与 persistence.system_name_in_user_path 对应，但覆盖正在运行的进程。
+- rule_id: process.system_name_in_user_path
+  title: 系统组件名进程位于用户可写目录
+  description: 进程使用了系统组件名，但镜像位于用户可写目录或公共可写位置；这是常见的名字伪装形态，需核对签名与来源。
+  severity: high
+  target:
+    entity_type: process
+  conditions:
+    - field: name
+      operator: contains_any
+      values:
+        - "svchost.exe"
+        - "winlogon.exe"
+        - "lsass.exe"
+        - "services.exe"
+        - "csrss.exe"
+        - "smss.exe"
+        - "explorer.exe"
+        - "taskhostw.exe"
+        - "rundll32.exe"
+        - "regsvr32.exe"
+        - "dllhost.exe"
+        - "spoolsv.exe"
+        - "wuauclt.exe"
+        - "conhost.exe"
+    - field: path
+      operator: contains_any
+      values:
+        - "\\Users\\"
+        - "\\AppData\\"
+        - "\\Temp\\"
+        - "\\Public\\"
+        - "\\ProgramData\\"
+        - "\\PerfLogs\\"
+        - "\\msys64\\"
+        - "\\Downloads\\"
+        - "\\Desktop\\"
+  advice: 核对文件签名、哈希与落地时间；系统组件名不应出现在用户可写目录的进程里。

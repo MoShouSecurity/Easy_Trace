@@ -1,0 +1,41 @@
+# Easy_Trace Analyzer 规则：可执行文件使用文档/图片扩展名伪装（双扩展名）
+# 数据源：显式 collect --module file --path <目录> --mode deep 产出的 file 实体。
+# 只判断文件名形态，不读取/执行文件内容。
+- rule_id: file.double_extension_executable
+  title: 可执行文件使用双扩展名伪装
+  description: 文件路径包含常见文档/图片扩展名，但实际最后扩展名是可执行/脚本类型；Windows 默认隐藏扩展名时容易被误认为文档。
+  severity: medium
+  target:
+    entity_type: file
+  conditions:
+    - field: path
+      operator: contains_any
+      values:
+        - ".pdf."
+        - ".doc."
+        - ".docx."
+        - ".xls."
+        - ".xlsx."
+        - ".ppt."
+        - ".pptx."
+        - ".jpg."
+        - ".jpeg."
+        - ".png."
+        - ".txt."
+        - ".rtf."
+    - field: extension
+      operator: ends_with_any
+      values:
+        - ".exe"
+        - ".scr"
+        - ".com"
+        - ".pif"
+        - ".js"
+        - ".jse"
+        - ".vbs"
+        - ".bat"
+        - ".cmd"
+        - ".ps1"
+        - ".hta"
+        - ".wsf"
+  advice: 核对文件来源、签名/哈希与落地时间；不要把“看起来像文档”的文件名当成文档内容。

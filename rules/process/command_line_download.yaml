@@ -1,0 +1,26 @@
+# Easy_Trace Analyzer 规则：下载执行（命令行内容）
+#
+# 数据源：process.command_line（仅 Deep 且采集策略命中时才有；Basic 没有该字段）。
+# 判据：内存下载执行、certutil/bitsadmin 下载或解码等"由命令拉取内容再执行"的常见形态。
+# 注意：invoke-webrequest / curl 等日常运维下载工具**刻意不收**（误报过高）。
+- rule_id: process.command_line.download_and_execute
+  title: 命令行出现下载并执行特征
+  description: 进程命令行包含内存下载执行或证书工具/后台传输工具下载、解码的命令。
+  severity: high
+  target:
+    entity_type: process
+  conditions:
+    - field: command_line
+      operator: contains_any
+      values:
+        - "downloadstring("
+        - "downloadfile("
+        - "net.webclient"
+        - "start-bitstransfer"
+        - "certutil -urlcache"
+        - "certutil -decode"
+        - "bitsadmin /transfer"
+    - field: collection_level
+      operator: equals
+      value: deep
+  advice: 核对下载来源与落地文件、执行账号与父进程；确认是否属已知软件的正常更新流程。

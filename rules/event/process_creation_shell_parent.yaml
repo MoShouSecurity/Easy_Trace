@@ -1,0 +1,38 @@
+# Easy_Trace Analyzer 规则：Office/浏览器派生 shell（4688 事件侧）
+# 数据源：4688 的 ParentProcessName / NewProcessName；与 process.office_to_shell 语义对应，
+# 但不依赖 process 实体和 spawn 关系，适合只采集了 event 的快照。
+- rule_id: event.process_creation_shell_parent
+  title: Office/浏览器进程派生 shell
+  description: 进程创建事件的父进程是 Office/浏览器，子进程是 shell 或脚本宿主；可能是宏/漏洞利用链，也可能有正常运维例外。
+  severity: high
+  target:
+    entity_type: event
+  conditions:
+    - field: event_id
+      operator: equals
+      value: "4688"
+    - field: parent_process_name
+      operator: contains_any
+      values:
+        - "winword.exe"
+        - "excel.exe"
+        - "powerpnt.exe"
+        - "outlook.exe"
+        - "chrome.exe"
+        - "msedge.exe"
+        - "firefox.exe"
+        - "iexplore.exe"
+        - "brave.exe"
+    - field: process_name
+      operator: contains_any
+      values:
+        - "powershell.exe"
+        - "pwsh.exe"
+        - "cmd.exe"
+        - "wscript.exe"
+        - "cscript.exe"
+        - "mshta.exe"
+        - "rundll32.exe"
+        - "regsvr32.exe"
+        - "wmic.exe"
+  advice: 核对父进程、命令行、执行账号与脚本/文件来源；结合网络连接和文件落地确认是否为宏/浏览器漏洞利用链。

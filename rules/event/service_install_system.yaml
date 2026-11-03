@@ -1,0 +1,13 @@
+# Easy_Trace Analyzer 规则：System 通道记录服务安装（7045）
+# 只说明发生了服务安装；当前 EventData 未保留 ImagePath，不能据此判断二进制路径。
+- rule_id: event.service_install_system
+  title: System 通道记录服务安装
+  description: 系统日志记录了一次服务安装；正常软件安装也会触发，需要结合服务名、来源账号和后续启动行为核查。
+  severity: medium
+  target:
+    entity_type: event
+  conditions:
+    - field: event_id
+      operator: equals
+      value: "7045"
+  advice: 核对 service_name 是否为预期部署；结合服务实体、二进制路径和安装来源确认是否异常。

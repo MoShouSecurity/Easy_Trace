@@ -1,0 +1,12 @@
+# Easy_Trace Analyzer 规则：创建本地账号（4720）
+- rule_id: event.account_created
+  title: 创建本地账号
+  description: 安全日志记录了一次本地账号创建；正常开通也会触发，需核对账号用途、创建者和后续登录行为。
+  severity: medium
+  target:
+    entity_type: event
+  conditions:
+    - field: event_id
+      operator: equals
+      value: "4720"
+  advice: 核对 target_user/target_sid、subject_user 与工单；检查该账号是否随后被加入高权限组或发生登录。
